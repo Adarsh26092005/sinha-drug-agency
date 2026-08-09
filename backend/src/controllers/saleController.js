@@ -23,7 +23,7 @@ const createSale = async (req, res) => {
         const saleItems = [];
 
         for (const item of items) {
-            const batch = await Purchase.findById(item.batchId);
+            const batch = await Purchase.findOne({ _id: item.batchId, owner: req.userId });
             if (!batch) return res.status(404).json({ message: "Batch not found" });
 
             const quantity = Number(item.quantity);
@@ -61,9 +61,10 @@ const createSale = async (req, res) => {
         const gstAmount = roundMoney((afterDiscount * gst) / 100);
         const totalAmount = roundMoney(afterDiscount + gstAmount);
 
-        const billNumber = await generateBillNumber();
+        const billNumber = await generateBillNumber(req.userId);
 
         const sale = await Sale.create({
+            owner: req.userId,
             billNumber,
             customerName,
             customerDLNo,
@@ -89,7 +90,7 @@ const createSale = async (req, res) => {
 
 const getSalesHistory = async (req, res) => {
     try {
-        const sales = await Sale.find().sort({ createdAt: -1 });
+        const sales = await Sale.find({ owner: req.userId }).sort({ createdAt: -1 });
         res.json(sales);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -98,7 +99,7 @@ const getSalesHistory = async (req, res) => {
 
 const downloadBillPdf = async (req, res) => {
     try {
-        const sale = await Sale.findById(req.params.id);
+        const sale = await Sale.findOne({ _id: req.params.id, owner: req.userId });
         if (!sale) return res.status(404).json({ message: "Sale not found" });
         generateBillPdf(res, sale);
     } catch (err) {

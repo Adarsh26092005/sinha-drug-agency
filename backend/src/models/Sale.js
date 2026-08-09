@@ -13,7 +13,8 @@ const saleItemSchema = new mongoose.Schema({
 
 const saleSchema = new mongoose.Schema(
     {
-        billNumber: { type: String, required: true, unique: true },
+        owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+        billNumber: { type: String, required: true },
         customerName: { type: String, default: "" },
         customerDLNo: { type: String, default: "" },
         customerAddress: { type: String, default: "" },
@@ -28,5 +29,7 @@ const saleSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+
+saleSchema.index({ owner: 1, billNumber: 1 }, { unique: true });
 
 module.exports = mongoose.model("Sale", saleSchema);

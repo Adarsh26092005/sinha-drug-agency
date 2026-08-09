@@ -29,17 +29,19 @@ const addPurchase = async (req, res) => {
         }
 
         let medicine = await Medicine.findOne({
+            owner: req.userId,
             name: { $regex: `^${medicineName}$`, $options: "i" },
         });
 
         if (!medicine) {
-            medicine = await Medicine.create({ name: medicineName, unit: unit || "pcs" });
+            medicine = await Medicine.create({ owner: req.userId, name: medicineName, unit: unit || "pcs" });
         } else if (unit) {
             medicine.unit = unit;
             await medicine.save();
         }
 
         let batch = await Purchase.findOne({
+            owner: req.userId,
             medicine: medicine._id,
             batchNumber: { $regex: `^${batchNumber}$`, $options: "i" },
         });
@@ -57,6 +59,7 @@ const addPurchase = async (req, res) => {
             await batch.save();
         } else {
             batch = await Purchase.create({
+                owner: req.userId,
                 medicine: medicine._id,
                 medicineName: medicine.name,
                 batchNumber,
@@ -82,7 +85,7 @@ const addPurchase = async (req, res) => {
 
 const getPurchaseHistory = async (req, res) => {
     try {
-        const purchases = await Purchase.find().sort({ createdAt: -1 });
+        const purchases = await Purchase.find({ owner: req.userId }).sort({ createdAt: -1 });
         res.json(purchases);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -91,7 +94,7 @@ const getPurchaseHistory = async (req, res) => {
 
 const deletePurchaseBatch = async (req, res) => {
     try {
-        const batch = await Purchase.findById(req.params.id);
+        const batch = await Purchase.findOne({ _id: req.params.id, owner: req.userId });
         if (!batch) return res.status(404).json({ message: "Batch not found" });
         await batch.deleteOne();
         res.json({ message: "Batch deleted" });

@@ -7,6 +7,7 @@ const searchMedicines = async (req, res) => {
         if (!query.trim()) return res.json([]);
 
         const medicines = await Medicine.find({
+            owner: req.userId,
             name: { $regex: query, $options: "i" },
         })
             .limit(10)
@@ -24,6 +25,7 @@ const searchInStockMedicines = async (req, res) => {
         const now = new Date();
 
         const filter = {
+            owner: req.userId,
             currentStock: { $gt: 0 },
             expiryDate: { $gte: now },
         };
@@ -46,6 +48,7 @@ const getStockBatches = async (req, res) => {
     try {
         const now = new Date();
         const batches = await Purchase.find({
+            owner: req.userId,
             currentStock: { $gt: 0 },
             expiryDate: { $gte: now },
         }).sort({ medicineName: 1, expiryDate: 1 });
@@ -62,6 +65,7 @@ const getExpiringSoonBatches = async (req, res) => {
         in6Months.setMonth(now.getMonth() + 6);
 
         const batches = await Purchase.find({
+            owner: req.userId,
             currentStock: { $gt: 0 },
             expiryDate: { $gte: now, $lte: in6Months },
         }).sort({ expiryDate: 1 });
@@ -76,6 +80,7 @@ const getExpiredBatches = async (req, res) => {
     try {
         const now = new Date();
         const batches = await Purchase.find({
+            owner: req.userId,
             currentStock: { $gt: 0 },
             expiryDate: { $lt: now },
         }).sort({ expiryDate: -1 });
@@ -86,13 +91,13 @@ const getExpiredBatches = async (req, res) => {
     }
 };
 
-// Used by the "Low Stock" page - in-stock, not-yet-expired batches under the threshold
 const getLowStockBatches = async (req, res) => {
     try {
         const now = new Date();
         const threshold = 20;
 
         const batches = await Purchase.find({
+            owner: req.userId,
             currentStock: { $gt: 0, $lt: threshold },
             expiryDate: { $gte: now },
         }).sort({ currentStock: 1 });

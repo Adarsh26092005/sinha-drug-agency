@@ -1,11 +1,11 @@
 const Sale = require("../models/Sale");
 
-// Generates something like: BILL-20260808-0001
-const generateBillNumber = async () => {
+const generateBillNumber = async (ownerId) => {
     const today = new Date();
     const datePart = today.toISOString().slice(0, 10).replace(/-/g, "");
 
     const countToday = await Sale.countDocuments({
+        owner: ownerId,
         billNumber: { $regex: `^BILL-${datePart}` },
     });
 

@@ -7,11 +7,12 @@ const getDashboardSummary = async (req, res) => {
         const startOfToday = new Date();
         startOfToday.setHours(0, 0, 0, 0);
 
-        const todaySales = await Sale.find({ saleDate: { $gte: startOfToday } });
+        const todaySales = await Sale.find({ owner: req.userId, saleDate: { $gte: startOfToday } });
         const todayRevenue = roundMoney(todaySales.reduce((sum, s) => sum + s.totalAmount, 0));
 
         const now = new Date();
         const batches = await Purchase.find({
+            owner: req.userId,
             currentStock: { $gt: 0 },
             expiryDate: { $gte: now },
         });
@@ -41,6 +42,7 @@ const getMonthlySales = async (req, res) => {
         const monthlyData = await Sale.aggregate([
             {
                 $match: {
+                    owner: req.userObjectId || req.userId,
                     saleDate: {
                         $gte: new Date(`${currentYear}-01-01`),
                         $lte: new Date(`${currentYear}-12-31T23:59:59`),
@@ -83,7 +85,7 @@ const getTopSellingMedicines = async (req, res) => {
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
         const topSelling = await Sale.aggregate([
-            { $match: { saleDate: { $gte: startOfMonth } } },
+            { $match: { owner: req.userObjectId || req.userId, saleDate: { $gte: startOfMonth } } },
             { $unwind: "$items" },
             {
                 $group: {
