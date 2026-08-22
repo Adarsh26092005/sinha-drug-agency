@@ -6,7 +6,7 @@ import API from "../api/axios";
 import Layout from "../components/Layout";
 import { exportToExcel } from "../utils/exportExcel";
 import { formatCurrency } from "../utils/formatCurrency";
-import { formatDate } from "../utils/formatDate";
+import { formatDate, formatExpiry } from "../utils/formatDate";
 import Pagination, { paginate } from "../components/Pagination";
 
 export default function Stock() {
@@ -69,7 +69,7 @@ export default function Stock() {
             "Cost Price": b.pricePerItem,
             MRP: b.mrp,
             "Selling Rate": b.markedPrice,
-            "Expiry Date": formatDate(b.expiryDate),
+            "Expiry Date": formatExpiry(b.expiryDate),
         }));
         exportToExcel(exportData, "Stock_Inventory", "Stock");
         toast.success("Exported to Excel");
@@ -165,7 +165,7 @@ export default function Stock() {
                                                         : "text-slate-300"
                                             }
                                         >
-                                            {formatDate(b.expiryDate)}
+                                            {formatExpiry(b.expiryDate)}
                                         </span>
                                     </td>
                                     <td className="px-5 py-3">

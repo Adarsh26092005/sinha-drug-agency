@@ -6,16 +6,17 @@ import API from "../api/axios";
 import Layout from "../components/Layout";
 import { exportSalesToExcel } from "../utils/exportExcel";
 import { formatCurrency } from "../utils/formatCurrency";
-import { formatDate, formatDateTime } from "../utils/formatDate";
+import { formatDate, formatDateTime, formatExpiry } from "../utils/formatDate";
 import Pagination, { paginate } from "../components/Pagination";
+
 export default function SalesHistory() {
     const [sales, setSales] = useState([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState(null);
-    const [currentPage, setCurrentPage] = useState(1);
     const [fromDate, setFromDate] = useState("");
     const [toDate, setToDate] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
         const fetchSales = async () => {
@@ -52,8 +53,9 @@ export default function SalesHistory() {
         return true;
     });
 
-    const totalRevenue = filtered.reduce((sum, s) => sum + s.totalAmount, 0);
     const paginated = paginate(filtered, currentPage);
+
+    const totalRevenue = filtered.reduce((sum, s) => sum + s.totalAmount, 0);
 
     const isValidRange = fromDate && toDate && new Date(fromDate) <= new Date(toDate);
 

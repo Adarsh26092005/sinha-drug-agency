@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import API from "../api/axios";
 import Layout from "../components/Layout";
 import { formatCurrency } from "../utils/formatCurrency";
+import { formatExpiry } from "../utils/formatDate";
 
 export default function Sell() {
     const [query, setQuery] = useState("");
@@ -233,7 +234,7 @@ export default function Sell() {
                                                         Batch: {batch.batchNumber} • Stock: {batch.currentStock} {batch.unit}
                                                     </span>
                                                     <span className="text-slate-500 text-xs">
-                                                        Exp: {new Date(batch.expiryDate).toLocaleDateString()}
+                                                        Exp: {formatExpiry(batch.expiryDate)}
                                                     </span>
                                                 </div>
                                             </button>

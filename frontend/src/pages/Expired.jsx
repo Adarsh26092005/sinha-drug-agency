@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import API from "../api/axios";
 import Layout from "../components/Layout";
 import { exportToExcel } from "../utils/exportExcel";
-import { formatDate } from "../utils/formatDate";
+import { formatExpiry } from "../utils/formatDate";
 import Pagination, { paginate } from "../components/Pagination";
 
 export default function Expired() {
@@ -65,7 +65,7 @@ export default function Expired() {
             "Batch No": b.batchNumber,
             Unit: b.unit,
             "Stock Remaining": b.currentStock,
-            "Expired On": formatDate(b.expiryDate),
+            "Expired On": formatExpiry(b.expiryDate),
         }));
         exportToExcel(exportData, "Expired_Stock", "Expired");
         toast.success("Exported to Excel");
@@ -134,7 +134,7 @@ export default function Expired() {
                                     <td className="px-5 py-3 text-slate-300">
                                         {b.currentStock} {b.unit}
                                     </td>
-                                    <td className="px-5 py-3 text-red-400">{formatDate(b.expiryDate)}</td>
+                                    <td className="px-5 py-3 text-red-400">{formatExpiry(b.expiryDate)}</td>
                                     <td className="px-5 py-3">
                                         <div className="flex items-center justify-end">
                                             <button

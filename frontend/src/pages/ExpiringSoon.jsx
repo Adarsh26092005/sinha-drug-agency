@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import API from "../api/axios";
 import Layout from "../components/Layout";
 import { exportToExcel } from "../utils/exportExcel";
-import { formatDate } from "../utils/formatDate";
+import { formatExpiry } from "../utils/formatDate";
 import Pagination, { paginate } from "../components/Pagination";
 
 function daysLeft(expiryDate) {
@@ -48,7 +48,7 @@ export default function ExpiringSoon() {
             "Batch No": b.batchNumber,
             Unit: b.unit,
             "Current Stock": b.currentStock,
-            "Expiry Date": formatDate(b.expiryDate),
+            "Expiry Date": formatExpiry(b.expiryDate),
             "Days Left": daysLeft(b.expiryDate),
         }));
         exportToExcel(exportData, "Expiring_Soon", "ExpiringSoon");
@@ -123,12 +123,12 @@ export default function ExpiringSoon() {
                                         <td className="px-5 py-3 text-slate-300">
                                             {b.currentStock} {b.unit}
                                         </td>
-                                        <td className="px-5 py-3 text-slate-300">{formatDate(b.expiryDate)}</td>
+                                        <td className="px-5 py-3 text-slate-300">{formatExpiry(b.expiryDate)}</td>
                                         <td className="px-5 py-3">
                                             <span
                                                 className={`inline-flex px-2.5 py-1 rounded-full text-xs border ${urgent
-                                                    ? "bg-red-500/15 text-red-400 border-red-500/30"
-                                                    : "bg-amber-500/15 text-amber-400 border-amber-500/30"
+                                                        ? "bg-red-500/15 text-red-400 border-red-500/30"
+                                                        : "bg-amber-500/15 text-amber-400 border-amber-500/30"
                                                     }`}
                                             >
                                                 {days} day{days !== 1 ? "s" : ""}

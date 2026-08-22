@@ -6,7 +6,7 @@ import API from "../api/axios";
 import Layout from "../components/Layout";
 import { exportToExcel } from "../utils/exportExcel";
 import { formatCurrency } from "../utils/formatCurrency";
-import { formatDate } from "../utils/formatDate";
+import { formatDate, formatExpiry } from "../utils/formatDate";
 import Pagination, { paginate } from "../components/Pagination";
 
 export default function PurchaseHistory() {
@@ -71,7 +71,7 @@ export default function PurchaseHistory() {
             Date: formatDate(p.purchaseDate),
             "Medicine Name": p.medicineName,
             "Batch No": p.batchNumber,
-            "Expiry Date": formatDate(p.expiryDate),
+            "Expiry Date": formatExpiry(p.expiryDate),
             Quantity: p.quantity,
             "Cost Price": p.pricePerItem,
             MRP: p.mrp,

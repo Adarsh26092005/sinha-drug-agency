@@ -56,13 +56,17 @@ export default function BuyStock() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (Number(form.markedPrice) > Number(form.mrp)) {
-            toast.error("Selling rate should not usually be higher than MRP");
+        if (Number(form.markedPrice) < Number(form.pricePerItem)) {
+            toast.error("Marked price should usually be higher than cost price");
         }
+
+        // Convert "YYYY-MM" to the last calendar day of that month
+        const [year, month] = form.expiryDate.split("-").map(Number);
+        const lastDayOfMonth = new Date(year, month, 0).toISOString().split("T")[0];
 
         setLoading(true);
         try {
-            const { data } = await API.post("/purchases", form);
+            const { data } = await API.post("/purchases", { ...form, expiryDate: lastDayOfMonth });
             toast.success(
                 `Batch ${form.batchNumber} of ${form.medicineName} added. Stock in this batch: ${data.updatedStock}`
             );
@@ -229,14 +233,14 @@ export default function BuyStock() {
                     </div>
 
                     <div>
-                        <label className="text-sm text-slate-300 mb-1 block">Expiry Date</label>
+                        <label className="text-sm text-slate-300 mb-1 block">Expiry (Month/Year)</label>
                         <input
-                            type="date"
+                            type="month"
                             name="expiryDate"
                             value={form.expiryDate}
                             onChange={handleChange}
                             required
-                            min={new Date().toISOString().split("T")[0]}
+                            min={new Date().toISOString().slice(0, 7)}
                             className="w-full bg-slate-800/60 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all [color-scheme:dark]"
                         />
                     </div>
