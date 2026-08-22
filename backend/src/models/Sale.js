@@ -4,6 +4,7 @@ const saleItemSchema = new mongoose.Schema({
     batch: { type: mongoose.Schema.Types.ObjectId, ref: "Purchase", required: true },
     medicineName: { type: String, required: true },
     batchNumber: { type: String, required: true },
+    unit: { type: String, default: "pcs" },
     mrp: { type: Number, required: true },
     expiryDate: { type: Date, required: true },
     quantity: { type: Number, required: true },

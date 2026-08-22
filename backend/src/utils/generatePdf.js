@@ -23,7 +23,17 @@ const generateBillPdf = (res, sale) => {
     const infoTop = doc.y;
     doc.fontSize(11);
     doc.text(`Bill No: ${sale.billNumber}`, 50, infoTop);
-    doc.text(`Date: ${new Date(sale.saleDate).toLocaleString()}`, 50, infoTop + 16);
+    doc.text(
+        `Date: ${new Date(sale.saleDate).toLocaleString("en-IN", {
+            timeZone: "Asia/Kolkata",
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+        })}`
+    );
 
     doc.fontSize(10);
     if (sale.customerName) doc.text(`M/s: ${sale.customerName}`, 320, infoTop, { width: 220 });

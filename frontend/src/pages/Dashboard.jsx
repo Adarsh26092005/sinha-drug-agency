@@ -54,7 +54,7 @@ function CustomTooltip({ active, payload, label }) {
 export default function Dashboard() {
     const [summary, setSummary] = useState(null);
     const [monthlySales, setMonthlySales] = useState([]);
-    const [topSelling, setTopSelling] = useState([]);
+    const [topSellingByCategory, setTopSellingByCategory] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -63,11 +63,11 @@ export default function Dashboard() {
                 const [summaryRes, monthlyRes, topSellingRes] = await Promise.all([
                     API.get("/dashboard/summary"),
                     API.get("/dashboard/monthly-sales"),
-                    API.get("/dashboard/top-selling"),
+                    API.get("/dashboard/top-selling-by-category"),
                 ]);
                 setSummary(summaryRes.data);
                 setMonthlySales(monthlyRes.data);
-                setTopSelling(topSellingRes.data);
+                setTopSellingByCategory(topSellingRes.data);
             } catch (err) {
                 console.error(err);
             } finally {
@@ -165,61 +165,75 @@ export default function Dashboard() {
                         </ResponsiveContainer>
                     </motion.div>
 
-                    {/* Top Selling Medicines This Month */}
+                    {/* Top Selling by Category (strip, bottle, vial, etc.) */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4, duration: 0.4 }}
-                        className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 mt-6"
+                        className="mt-6"
                     >
                         <div className="flex items-center gap-2 mb-4">
                             <Award className="w-5 h-5 text-purple-400" />
                             <h2 className="text-white font-semibold">
-                                Top Selling Medicines — {new Date().toLocaleString("default", { month: "long" })}
+                                Top Selling by Category — {new Date().toLocaleString("default", { month: "long" })}
                             </h2>
                         </div>
 
-                        {topSelling.length === 0 ? (
-                            <p className="text-slate-500 text-sm py-6 text-center">
-                                No sales recorded this month yet.
-                            </p>
+                        {topSellingByCategory.length === 0 ? (
+                            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
+                                <p className="text-slate-500 text-sm text-center">
+                                    No sales recorded this month yet.
+                                </p>
+                            </div>
                         ) : (
-                            <ResponsiveContainer width="100%" height={Math.max(topSelling.length * 40, 200)}>
-                                <BarChart data={topSelling} layout="vertical" margin={{ left: 20 }}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} />
-                                    <XAxis type="number" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
-                                    <YAxis
-                                        type="category"
-                                        dataKey="name"
-                                        stroke="#64748b"
-                                        fontSize={12}
-                                        tickLine={false}
-                                        axisLine={false}
-                                        width={140}
-                                    />
-                                    <Tooltip
-                                        content={({ active, payload }) =>
-                                            active && payload && payload.length ? (
-                                                <div className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 shadow-xl">
-                                                    <p className="text-slate-300 text-xs mb-1">{payload[0].payload.name}</p>
-                                                    <p className="text-purple-400 font-semibold text-sm">
-                                                        {payload[0].value} units sold
-                                                    </p>
-                                                    <p className="text-slate-400 text-xs">
-                                                        {formatCurrency(payload[0].payload.revenue)} revenue
-                                                    </p>
-                                                </div>
-                                            ) : null
-                                        }
-                                        cursor={{ fill: "rgba(168, 85, 247, 0.08)" }}
-                                    />
-                                    <Bar dataKey="quantity" radius={[0, 6, 6, 0]} barSize={18}>
-                                        {topSelling.map((_, index) => (
-                                            <Cell key={index} fill="#a855f7" fillOpacity={1 - index * 0.08} />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                {topSellingByCategory.map((cat) => (
+                                    <div
+                                        key={cat.unit}
+                                        className="bg-slate-900/60 border border-slate-800 rounded-xl p-5"
+                                    >
+                                        <h3 className="text-slate-300 text-sm font-medium mb-3 capitalize">
+                                            {cat.unit} {cat.unit === "pcs" ? "" : "s"}
+                                        </h3>
+                                        <ResponsiveContainer width="100%" height={Math.max(cat.items.length * 38, 120)}>
+                                            <BarChart data={cat.items} layout="vertical" margin={{ left: 10 }}>
+                                                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} />
+                                                <XAxis type="number" stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} />
+                                                <YAxis
+                                                    type="category"
+                                                    dataKey="name"
+                                                    stroke="#64748b"
+                                                    fontSize={11}
+                                                    tickLine={false}
+                                                    axisLine={false}
+                                                    width={110}
+                                                />
+                                                <Tooltip
+                                                    content={({ active, payload }) =>
+                                                        active && payload && payload.length ? (
+                                                            <div className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 shadow-xl">
+                                                                <p className="text-slate-300 text-xs mb-1">{payload[0].payload.name}</p>
+                                                                <p className="text-purple-400 font-semibold text-sm">
+                                                                    {payload[0].value} sold
+                                                                </p>
+                                                                <p className="text-slate-400 text-xs">
+                                                                    ₹{payload[0].payload.revenue} revenue
+                                                                </p>
+                                                            </div>
+                                                        ) : null
+                                                    }
+                                                    cursor={{ fill: "rgba(168, 85, 247, 0.08)" }}
+                                                />
+                                                <Bar dataKey="quantity" radius={[0, 6, 6, 0]} barSize={14}>
+                                                    {cat.items.map((_, index) => (
+                                                        <Cell key={index} fill="#a855f7" fillOpacity={1 - index * 0.12} />
+                                                    ))}
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                ))}
+                            </div>
                         )}
                     </motion.div>
                 </>

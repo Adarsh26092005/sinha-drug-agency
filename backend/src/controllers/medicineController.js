@@ -91,18 +91,36 @@ const getExpiredBatches = async (req, res) => {
     }
 };
 
+// Aggregates stock across ALL batches of the same medicine (case-insensitive name match).
+// A medicine only counts as "low stock" if its combined total is under the threshold —
+// e.g. a near-empty old batch doesn't trigger the alert if a newer batch has plenty.
 const getLowStockBatches = async (req, res) => {
     try {
         const now = new Date();
         const threshold = 20;
 
-        const batches = await Purchase.find({
-            owner: req.userId,
-            currentStock: { $gt: 0, $lt: threshold },
-            expiryDate: { $gte: now },
-        }).sort({ currentStock: 1 });
+        const result = await Purchase.aggregate([
+            {
+                $match: {
+                    owner: req.userObjectId || req.userId,
+                    currentStock: { $gt: 0 },
+                    expiryDate: { $gte: now },
+                },
+            },
+            {
+                $group: {
+                    _id: { $toLower: "$medicineName" },
+                    medicineName: { $first: "$medicineName" },
+                    unit: { $first: "$unit" },
+                    totalStock: { $sum: "$currentStock" },
+                },
+            },
+            { $match: { totalStock: { $lt: threshold } } },
+            { $sort: { totalStock: 1 } },
+            { $project: { _id: 0, medicineName: 1, unit: 1, totalStock: 1 } },
+        ]);
 
-        res.json(batches);
+        res.json(result);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

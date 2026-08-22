@@ -5,19 +5,19 @@ import toast from "react-hot-toast";
 import API from "../api/axios";
 import Layout from "../components/Layout";
 import { exportToExcel } from "../utils/exportExcel";
-import { formatDate } from "../utils/formatDate";
 import Pagination, { paginate } from "../components/Pagination";
 
 export default function LowStock() {
-    const [batches, setBatches] = useState([]);
+    const [medicines, setMedicines] = useState([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const { data } = await API.get("/medicines/low-stock");
-                setBatches(data);
+                setMedicines(data);
             } catch (err) {
                 console.error(err);
             } finally {
@@ -27,8 +27,8 @@ export default function LowStock() {
         fetchData();
     }, []);
 
-    const filtered = batches.filter((b) =>
-        b.medicineName.toLowerCase().includes(search.toLowerCase())
+    const filtered = medicines.filter((m) =>
+        m.medicineName.toLowerCase().includes(search.toLowerCase())
     );
     const paginated = paginate(filtered, currentPage);
 
@@ -37,12 +37,10 @@ export default function LowStock() {
             toast.error("Nothing to export");
             return;
         }
-        const exportData = filtered.map((b) => ({
-            "Medicine Name": b.medicineName,
-            "Batch No": b.batchNumber,
-            Unit: b.unit,
-            "Stock Left": b.currentStock,
-            "Expiry Date": formatDate(b.expiryDate),
+        const exportData = filtered.map((m) => ({
+            "Medicine Name": m.medicineName,
+            Unit: m.unit,
+            "Total Stock": m.totalStock,
         }));
         exportToExcel(exportData, "Low_Stock", "LowStock");
         toast.success("Exported to Excel");
@@ -52,7 +50,8 @@ export default function LowStock() {
         <Layout>
             <h1 className="text-2xl font-bold text-white mb-1">Low Stock</h1>
             <p className="text-slate-400 mb-6">
-                {batches.length} batch{batches.length !== 1 ? "es" : ""} with less than 20 units remaining
+                {medicines.length} medicine{medicines.length !== 1 ? "s" : ""} with less than 20 total units
+                remaining (across all batches)
             </p>
 
             <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
@@ -83,7 +82,7 @@ export default function LowStock() {
             ) : filtered.length === 0 ? (
                 <div className="text-center py-16 bg-slate-900/40 border border-slate-800 rounded-xl">
                     <PackageX className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-                    <p className="text-slate-400">{search ? "No matches" : "No low-stock batches right now"}</p>
+                    <p className="text-slate-400">{search ? "No matches" : "No low-stock medicines right now"}</p>
                 </div>
             ) : (
                 <div className="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden">
@@ -91,28 +90,26 @@ export default function LowStock() {
                         <thead>
                             <tr className="border-b border-slate-800 text-slate-400 text-left">
                                 <th className="px-5 py-3 font-medium">Medicine</th>
-                                <th className="px-5 py-3 font-medium">Batch No</th>
-                                <th className="px-5 py-3 font-medium">Stock Left</th>
-                                <th className="px-5 py-3 font-medium">Expiry</th>
+                                <th className="px-5 py-3 font-medium">Unit</th>
+                                <th className="px-5 py-3 font-medium">Total Stock</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {paginated.map((b, i) => (
+                            {paginated.map((m, i) => (
                                 <motion.tr
-                                    key={b._id}
+                                    key={m.medicineName}
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     transition={{ delay: i * 0.03 }}
                                     className="border-b border-slate-800/60 hover:bg-slate-800/30 transition-colors"
                                 >
-                                    <td className="px-5 py-3 text-white font-medium">{b.medicineName}</td>
-                                    <td className="px-5 py-3 text-slate-300">{b.batchNumber}</td>
+                                    <td className="px-5 py-3 text-white font-medium">{m.medicineName}</td>
+                                    <td className="px-5 py-3 text-slate-400 capitalize">{m.unit}</td>
                                     <td className="px-5 py-3">
                                         <span className="inline-flex px-2.5 py-1 rounded-full text-xs border bg-amber-500/15 text-amber-400 border-amber-500/30">
-                                            {b.currentStock} {b.unit} left
+                                            {m.totalStock} {m.unit} left
                                         </span>
                                     </td>
-                                    <td className="px-5 py-3 text-slate-300">{formatDate(b.expiryDate)}</td>
                                 </motion.tr>
                             ))}
                         </tbody>

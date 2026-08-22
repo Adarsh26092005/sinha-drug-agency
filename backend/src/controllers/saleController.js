@@ -43,6 +43,7 @@ const createSale = async (req, res) => {
                 batch: batch._id,
                 medicineName: batch.medicineName,
                 batchNumber: batch.batchNumber,
+                unit: batch.unit,
                 mrp: batch.mrp,
                 expiryDate: batch.expiryDate,
                 quantity,

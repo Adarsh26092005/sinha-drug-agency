@@ -79,35 +79,42 @@ const getMonthlySales = async (req, res) => {
     }
 };
 
-const getTopSellingMedicines = async (req, res) => {
+const getTopSellingByCategory = async (req, res) => {
     try {
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-        const topSelling = await Sale.aggregate([
+        const results = await Sale.aggregate([
             { $match: { owner: req.userObjectId || req.userId, saleDate: { $gte: startOfMonth } } },
             { $unwind: "$items" },
             {
                 $group: {
-                    _id: "$items.medicineName",
+                    _id: { unit: "$items.unit", name: "$items.medicineName" },
                     totalQuantity: { $sum: "$items.quantity" },
                     totalRevenue: { $sum: "$items.total" },
                 },
             },
             { $sort: { totalQuantity: -1 } },
-            { $limit: 8 },
+            {
+                $group: {
+                    _id: "$_id.unit",
+                    items: {
+                        $push: {
+                            name: "$_id.name",
+                            quantity: "$totalQuantity",
+                            revenue: "$totalRevenue",
+                        },
+                    },
+                },
+            },
+            { $project: { unit: "$_id", items: { $slice: ["$items", 5] }, _id: 0 } },
+            { $sort: { unit: 1 } },
         ]);
 
-        const result = topSelling.map((m) => ({
-            name: m._id,
-            quantity: m.totalQuantity,
-            revenue: m.totalRevenue,
-        }));
-
-        res.json(result);
+        res.json(results);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 };
 
-module.exports = { getDashboardSummary, getMonthlySales, getTopSellingMedicines };
+module.exports = { getDashboardSummary, getMonthlySales, getTopSellingByCategory };
