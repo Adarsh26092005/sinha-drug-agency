@@ -18,6 +18,11 @@ const createSale = async (req, res) => {
         if (!items || items.length === 0) {
             return res.status(400).json({ message: "At least one item is required" });
         }
+        if (!customerName.trim() || !customerDLNo.trim() || !customerAddress.trim()) {
+            return res.status(400).json({
+                message: "Customer name, DL No, and address are required",
+            });
+        }
 
         let subtotal = 0;
         const saleItems = [];

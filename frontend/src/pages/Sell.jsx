@@ -14,7 +14,7 @@ export default function Sell() {
     const [cart, setCart] = useState([]);
     const [discountPercent, setDiscountPercent] = useState(0);
     const [gstPercent, setGstPercent] = useState(0);
-    const [showCustomerFields, setShowCustomerFields] = useState(false);
+    const [showCustomerFields, setShowCustomerFields] = useState(true);
     const [customerName, setCustomerName] = useState("");
     const [customerDLNo, setCustomerDLNo] = useState("");
     const [customerAddress, setCustomerAddress] = useState("");
@@ -85,6 +85,18 @@ export default function Sell() {
     const handleCompleteSale = async () => {
         if (cart.length === 0) {
             toast.error("Add at least one medicine to the bill");
+            return;
+        }
+        if (!customerName.trim()) {
+            toast.error("Customer name is required");
+            return;
+        }
+        if (!customerDLNo.trim()) {
+            toast.error("Customer DL No. is required");
+            return;
+        }
+        if (!customerAddress.trim()) {
+            toast.error("Customer address is required");
             return;
         }
         for (const item of cart) {
@@ -316,7 +328,7 @@ export default function Sell() {
                                 onClick={() => setShowCustomerFields(!showCustomerFields)}
                                 className="w-full flex items-center justify-between px-4 py-3 text-sm text-slate-300 hover:bg-slate-800/40 transition-colors"
                             >
-                                <span>Customer Details (optional)</span>
+                                <span>Customer Details</span>
                                 <ChevronDown
                                     className={`w-4 h-4 transition-transform ${showCustomerFields ? "rotate-180" : ""
                                         }`}
@@ -331,7 +343,9 @@ export default function Sell() {
                                         className="px-4 pb-4 space-y-3 border-t border-slate-800"
                                     >
                                         <div className="pt-3">
-                                            <label className="text-xs text-slate-400 mb-1 block">Customer / M/s Name</label>
+                                            <label className="text-xs text-slate-400 mb-1 block">
+                                                Customer / M/s Name <span className="text-red-400">*</span>
+                                            </label>
                                             <input
                                                 type="text"
                                                 value={customerName}
@@ -341,7 +355,9 @@ export default function Sell() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-xs text-slate-400 mb-1 block">Customer DL No.</label>
+                                            <label className="text-xs text-slate-400 mb-1 block">
+                                                Customer DL No. <span className="text-red-400">*</span>
+                                            </label>
                                             <input
                                                 type="text"
                                                 value={customerDLNo}
@@ -351,7 +367,9 @@ export default function Sell() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-xs text-slate-400 mb-1 block">Address</label>
+                                            <label className="text-xs text-slate-400 mb-1 block">
+                                                Address <span className="text-red-400">*</span>
+                                            </label>
                                             <input
                                                 type="text"
                                                 value={customerAddress}
